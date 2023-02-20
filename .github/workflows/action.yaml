@@ -1,22 +1,31 @@
-name: Update READMEs
+name: Dynamic Template
 
 on:
   push:
-    paths:
-      - "projects.md"
+    branches:
+      - main
+  workflow_dispatch:
+
 jobs:
-  action:
+  update_templates:
+    name: "Update Templates"
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v2
-      - name: Set up NodeJS
-        uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-      - name: Install dependencies
-        run: npm ci
-      - name: Run main script
+      - name: "📥  Fetching Repository Contents"
+        uses: actions/checkout@main
+
+      - name: "💾  Github Repository Metadata"
+        uses: varunsridharan/action-repository-meta@main
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npm start || exit 0
+          GITHUB_TOKEN: ${{ secrets.GitToken }}
+
+      - name: "💫  Dynamic Template Render"
+        uses: varunsridharan/action-dynamic-readme@main
+        with:
+          GLOBAL_TEMPLATE_REPOSITORY: {repository-owner}/{repository-name}
+          files: |
+            FILE.md
+            FILE2.md=output_filename.md
+            folder1/file.md=folder2/output.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GitToken }}
